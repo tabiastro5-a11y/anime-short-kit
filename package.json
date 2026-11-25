@@ -1,0 +1,26 @@
+{
+  "name": "anime-short-kit",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@react-three/fiber": "^9.8.2",
+    "@react-three/postprocessing": "^3.2.2",
+    "@remotion/cli": "^4.0.545",
+    "@remotion/google-fonts": "^4.0.545",
+    "@remotion/media": "^4.0.545",
+    "@remotion/three": "^4.0.545",
+    "@types/react": "^19.3.0",
+    "@types/three": "^0.187.0",
+    "postprocessing": "^6.39.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "remotion": "^4.0.545",
+    "three": "^0.187.0",
+    "typescript": "^7.0.2"
+  },
+  "license": "MIT"
+}

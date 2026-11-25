@@ -1,0 +1,21 @@
+# secrets (keys live in ~/.tts_keys.env, outside the repo)
+.env
+*.env
+
+node_modules/
+.venv/
+build/
+out/
+__pycache__/
+
+# media: too big for git
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.m4a
+
+# 3D models: download them yourself (see README)
+public/bridge/kenney/
+public/*/models/
+assets/
