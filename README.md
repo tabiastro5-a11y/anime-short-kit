@@ -1,4 +1,4 @@
-# 日本語アニメショート・キット（アニメを作る部分）
+# 日本語アニメショート・キット（AI動画のレシピ）
 
 2Dの人物を3Dの世界に置いた、日本語の縦型アニメショート（1080×1920）を、Claude Code に作ってもらうためのキットです。
 three.js と Remotion で、自分の PC の上で描きます（AI の動画生成は使いません）。
@@ -6,17 +6,10 @@ three.js と Remotion で、自分の PC の上で描きます（AI の動画生
 **このキットが受け持つのは「台本と声ができたあと、それをアニメの動画にする所」だけです。**
 台本・ナレーションの声・タイトルは、自分で用意してください。物語・人物・声は、必ず自分のものを使ってください。
 
-## 土台
-絵の作り方の土台は、**Mr omi 氏の `cartoon-3d-short` スキル（MIT License）** です。
-このキットには、そのスキルを変えずに同梱しています（`.claude/skills/cartoon-3d-short/`、`LICENSE` も同梱）。
-元のスキル：<!-- TODO: Mr omi 氏の元のリポジトリの URL -->
-
-元のスキルに入っている参考のコマ（`references/frames/`・`references/sheets/`）は、他の方の動画のコマなので、このキットには入れていません。必要なら元のスキルから入手してください。
-
 ## 中身
 | 場所 | 中身 |
 |---|---|
-| `.claude/skills/cartoon-3d-short/` | 土台のスキル（Mr omi 氏、MIT）。見た目・カメラ・人物・仕上げ・音・確認の手順 |
+| `.claude/skills/cartoon-3d-short/` | 土台のスキル（MIT）。見た目・カメラ・人物・仕上げ・音・確認の手順 |
 | `.claude/skills/anime-short/` | 日本語化と、こちらで足した部分の決まり：和の世界と人物の部品、顔の動かし方、見せ場の撮り方、よくある失敗と直し方、書き出しの手順 |
 | `src/videos/bridge/` | 見本の動画（元のスキルの「橋」のショート）。新しい動画はこれをコピーして始める |
 | `src/lib/` | 共通部品：`SyncComposer`（静止画が背景色だけになる問題の回避）、`Captions`（日本語の字幕）、`faceRig`（目・眉・口をコードで描いて動かす顔リグ）、`shotLint`（カットの点検）、`contextGuard`（GPU が落ちたら白い絵を出さずに止める） |
@@ -53,4 +46,4 @@ Claude Code でこのフォルダを開き、次のように頼みます：
 
 ## ライセンス
 - `.claude/skills/cartoon-3d-short/` と `src/videos/bridge/`：Mr omi 氏、MIT License（`.claude/skills/cartoon-3d-short/LICENSE`）
-- それ以外：MIT License（`LICENSE`）
+- それ以外：AI動画のレシピ、MIT License（`LICENSE`）
