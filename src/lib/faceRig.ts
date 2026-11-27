@@ -91,9 +91,10 @@ const mixMouth = (a: Mouth, b: Mouth, t: number): Mouth => {
 };
 
 /** the face at frame f. keys: expression changes (sorted); talks: spoken lines; amp: loudness of the voice per frame (0..1);
- *  seed: per character, so two people never blink together */
-export const faceAt = (keys: Key[], f: number, opt: { talks?: Talk[]; amp?: number[]; seed?: number; blink?: boolean } = {}): Face => {
-  const { talks = [], amp, seed = 1, blink = true } = opt;
+ *  seed: per character, so two people never blink together; hold: the mouth keeps each shape this many frames while talking
+ *  (cartoon lip flap is drawn on threes: a new mouth every frame read as chattering) */
+export const faceAt = (keys: Key[], f: number, opt: { talks?: Talk[]; amp?: number[]; seed?: number; blink?: boolean; hold?: number } = {}): Face => {
+  const { talks = [], amp, seed = 1, blink = true, hold = 3 } = opt;
   let i = 0;
   while (i + 1 < keys.length && keys[i + 1].f - 2 <= f) i++;
   const cur = POSES[keys[i].pose] ?? POSES.neutral, prev = POSES[keys[Math.max(0, i - 1)].pose] ?? cur;
@@ -121,10 +122,14 @@ export const faceAt = (keys: Key[], f: number, opt: { talks?: Talk[]; amp?: numb
     }
   }
   // lip-sync: while a line is spoken the opening follows the voice; the pose's own mouth is the rest shape
-  const talking = talks.some(([a, b]) => f >= a && f < b);
-  if (talking) {
-    const a = amp ? clamp((amp[f] ?? 0) * 0.55 + (amp[f - 1] ?? 0) * 0.25 + (amp[f + 1] ?? 0) * 0.2) : 0.5 + 0.5 * Math.sin(f * 1.9) * Math.sin(f * 0.7 + seed);
-    const open = clamp((a - 0.06) / 0.5);
+  const line = talks.find(([a, b]) => f >= a && f < b);
+  if (line) {
+    // one mouth per `hold` frames, counted from the line's start: the loudness averaged over that block, in 4 steps
+    const h = Math.max(1, Math.round(hold)), fb = f - ((f - line[0]) % h);
+    let a = 0;
+    if (amp) { for (let k = 0; k < h; k++) a += amp[fb + k] ?? 0; a /= h; }
+    else a = rnd(fb * 0.37 + seed * 5.1) < 0.3 ? 0 : 0.3 + 0.5 * rnd(fb * 1.7 + seed);
+    const open = Math.round(clamp((a - 0.06) / 0.5) * 3) / 3;
     if (open > 0.02) {
       const w = lerp(24, 29, clamp(open * 2.5)) - 5 * clamp((open - 0.55) / 0.45);
       m = { ...m, w: lerp(m.w, w, 0.9), h: lerp(3.5, 21, open), c: m.c * 0.25, tilt: m.tilt * 0.3, x: m.x * 0.4, box: 1, teeth: 1, tongue: open > 0.4 ? 1 : 0, wav: 0 };
