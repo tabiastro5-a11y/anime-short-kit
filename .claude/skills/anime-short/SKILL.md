@@ -30,7 +30,7 @@ description: 日本語の縦型アニメショート（2Dの人物を3Dの世界
 
 ## 3. 人物の絵と顔の動き
 - **人物の絵は ChatGPT などで作る（顔の部品のない頭と、胴＝服）。腕・脚・目・眉・口はコードで描いて動かす**：指示文は `references/character-prompts.md`、切り分けは `scripts/slice_character.py`。
-- **顔の動かし方は `references/face-rig.md`** と顔リグ `src/lib/faceRig.ts`。目は別の目に一瞬で替わる、眉と口は別々の部品として変形・移動する。口は声の大きさに合わせて動かす。
+- **顔の動かし方は `references/face-rig.md`** と顔リグ `src/lib/faceRig.ts`。目は別の目に一瞬で替わる、眉と口は別々の部品として変形・移動する。口はセリフに合わせて動かす（`scripts/lipsync.py` で読みの母音の口の形 `vis.json` を作り、`faceAt` に渡す。前後のコマと混ぜてなめらかに変わる）。
 
 ## 4. カットと見せ場
 - **見せ場の撮り方は `references/climax-playbook.md`**：つかみ・紹介・決意・驚き・災害・怒り・オチなど場面の型ごとに、寄り方・角度・演技・記号・間を決めてある。カットを設計する前に、台本の文ごとに型を当てはめる。

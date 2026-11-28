@@ -69,6 +69,16 @@ export const POSES: Record<string, Pose> = {
   dazed: { eye: "spiral", brow: [B(2, -12), B(2, -12)], mouth: { w: 14, wav: 1 } },
 };
 
+/** mouth shapes of Japanese speech (lip sync from the script): a i u e o, n = closed (ん, っ, m b p), - = silent.
+ *  Units are % of the face width like POSES; h is the full opening, scaled by the voice loudness when amp is given. */
+export const VISEMES: Record<string, Partial<Mouth>> = {
+  a: { w: 24, h: 17, box: 1, teeth: 1, tongue: 1 },
+  i: { w: 30, h: 6, box: 1, teeth: 1 },
+  u: { w: 10, h: 8, box: 1 },
+  e: { w: 25, h: 11, box: 1, teeth: 1 },
+  o: { w: 15, h: 14, box: 1 },
+  n: { w: 15, h: 0 },
+};
 export type Key = { f: number; pose: string };
 export type Talk = [number, number];   // frames [from, to) of a spoken line
 
@@ -92,9 +102,12 @@ const mixMouth = (a: Mouth, b: Mouth, t: number): Mouth => {
 
 /** the face at frame f. keys: expression changes (sorted); talks: spoken lines; amp: loudness of the voice per frame (0..1);
  *  seed: per character, so two people never blink together; hold: the mouth keeps each shape this many frames while talking
- *  (cartoon lip flap is drawn on threes: a new mouth every frame read as chattering) */
-export const faceAt = (keys: Key[], f: number, opt: { talks?: Talk[]; amp?: number[]; seed?: number; blink?: boolean; hold?: number } = {}): Face => {
-  const { talks = [], amp, seed = 1, blink = true, hold = 3 } = opt;
+ *  (cartoon lip flap is drawn on threes: a new mouth every frame read as chattering);
+ *  vis: one mouth-shape letter per frame from the script (VISEMES keys + "-" silent, upper case = a mora's first frame;
+ *  written by lipsync.py). With vis the
+ *  mouth follows the words (a/i/u/e/o/n), blending smoothly between shapes, wherever the voice is (talks can be left out) */
+export const faceAt = (keys: Key[], f: number, opt: { talks?: Talk[]; amp?: number[]; seed?: number; blink?: boolean; hold?: number; vis?: string } = {}): Face => {
+  const { talks = [], amp, seed = 1, blink = true, hold = 3, vis } = opt;
   let i = 0;
   while (i + 1 < keys.length && keys[i + 1].f - 2 <= f) i++;
   const cur = POSES[keys[i].pose] ?? POSES.neutral, prev = POSES[keys[Math.max(0, i - 1)].pose] ?? cur;
@@ -123,7 +136,27 @@ export const faceAt = (keys: Key[], f: number, opt: { talks?: Talk[]; amp?: numb
   }
   // lip-sync: while a line is spoken the opening follows the voice; the pose's own mouth is the rest shape
   const line = talks.find(([a, b]) => f >= a && f < b);
-  if (line) {
+  if (vis && (line || !talks.length)) {
+    // script lip sync, smooth: every frame's target shape (the letter's mouth, or the pose's own mouth when silent) is
+    // blended with its neighbours (weights 1 2 3 2 1 over f-2 .. f+2), so the mouth flows from one shape into the next
+    // and starts moving a little before the sound, as animators do
+    const target = (k: number): Mouth => {
+      const raw = vis[k] ?? "-", v = raw.toLowerCase();
+      if (v === "-") return m;
+      const s = { ...M0, ...(VISEMES[v] ?? VISEMES.a) };
+      if (raw !== v) { s.h *= 0.4; s.w *= 0.92; }   // upper case = a mora's first frame: a small dip, so "おおお" still moves
+      if (amp) { let a = 0, n = 0; for (let j = k - 1; j <= k + 1; j++) { a += amp[j] ?? 0; n++; } s.h *= 0.6 + 0.4 * clamp(a / n / 0.6); }
+      return { ...s, c: m.c * 0.2, tilt: m.tilt * 0.3, x: m.x * 0.4, y: m.y };
+    };
+    const W = [1, 2, 3, 2, 1], keys = Object.keys(M0) as (keyof Mouth)[];
+    const acc = { ...M0 }; let sum = 0, voiced = false;
+    for (let d = -2; d <= 2; d++) {
+      const w = W[d + 2], s = target(f + d); sum += w;
+      if ((vis[f + d] ?? "-") !== "-") voiced = true;
+      for (const k of keys) acc[k] += s[k] * w;
+    }
+    if (voiced) { for (const k of keys) acc[k] /= sum; m = { ...acc, wav: 0 }; }
+  } else if (line) {
     // one mouth per `hold` frames, counted from the line's start: the loudness averaged over that block, in 4 steps
     const h = Math.max(1, Math.round(hold)), fb = f - ((f - line[0]) % h);
     let a = 0;

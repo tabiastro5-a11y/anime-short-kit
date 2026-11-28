@@ -33,6 +33,7 @@ python scripts/look_check.py --ours out/<名前>/check/x_100.jpg ... --ref-frame
 python scripts/sbs_sheet.py out.jpg --ours ... --ref ...                    # 参考と並べた比較画像
 node scripts/render-short.mjs <コンポジション名> out/<名前>/final/<名前>_v1.mp4 --audio episodes/<名前>/media/mix.wav
 python scripts/short_qa.py out/<名前>/final/<名前>_v1.mp4 out/<名前>/qa/v1    # 全フレームと音の確認
+python scripts/lipsync.py --eleven <声>.alignment.json src/videos/<名前>/vis.json   # 口の形（セリフに合わせる。時刻がなければ --whisper <声.wav>）
 npx tsc -p .
 ```
 
